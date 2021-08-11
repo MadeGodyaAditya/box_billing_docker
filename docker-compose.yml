@@ -1,0 +1,47 @@
+services:
+    db:
+        container_name: db
+        image: mariadb:10.3
+        restart: always
+        environment:
+            MYSQL_ROOT_PASSWORD: admin
+            MYSQL_DATABASE: boxbill
+            MYSQL_USER: boxbill_admin
+            MYSQL_PASSWORD: admin
+        volumes: 
+            - container-volume:/var/lib/mysql
+            - ./db/boxbill.sql:/docker-entrypoint-initdb.d/boxbill.sql
+        ports:
+            - "3308:3306"
+        networks:
+            - boxbill_net
+
+    boxbill:
+        container_name: boxbill
+        build: ./web
+        ports:
+            - "8004:80"
+        depends_on:
+            - db
+        networks:
+            - boxbill_net
+
+    phpmyadmin:
+        container_name: phpmyadmin
+        image: phpmyadmin/phpmyadmin:latest
+        restart: always
+        environment:
+            PMA_HOST: db
+            PMA_USER: root
+            PMA_PASSWORD: admin
+            PMA_ARBITRARY: 1
+        ports:
+            - "8080:80"
+        networks:
+            - boxbill_net
+
+networks:
+    boxbill_net:
+
+volumes: 
+    container-volume:
